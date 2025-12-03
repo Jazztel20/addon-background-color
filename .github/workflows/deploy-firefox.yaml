@@ -1,0 +1,42 @@
+name: Deploy Firefox Add-on (signed)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  sign-firefox-addon:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build extension
+        run: npm run build
+
+      - name: Sign with web-ext
+        run: |
+          npx web-ext sign \
+            --api-key "${{ secrets.AMO_JWT_ISSUER }}" \
+            --api-secret "${{ secrets.AMO_JWT_SECRET }}" \
+            --channel unlisted \
+            --source-dir ./.output/extension \
+            --artifacts-dir ./signed
+
+      - name: Upload signed Firefox addon
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-addon-signed
+          path: ./signed/**
+          if-no-files-found: error
