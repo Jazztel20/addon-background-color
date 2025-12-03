@@ -23,6 +23,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Audit des dépendances (adaptation possible selon ton package.json)
       - name: Security audit
         run: |
           if npm run audit -- --help > /dev/null 2>&1; then
@@ -31,18 +32,22 @@ jobs:
             npm audit --audit-level=high
           fi
 
+      # Lint du code (eslint ou whatever derrière)
       - name: Lint
         run: npm run lint
 
+      # Build de l’extension (dossier .output/extension)
       - name: Build extension
         run: npm run build
 
+      # Package Chrome (ZIP) + Firefox (XPI) via wxt/web-ext
       - name: Package Chrome ZIP
         run: npm run zip
 
       - name: Package Firefox XPI
         run: npm run pack:zip
 
+      # Upload des artefacts générés (nom à adapter si différent)
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
